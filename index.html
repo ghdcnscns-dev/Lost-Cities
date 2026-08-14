@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>던전 심층 탐험 - 자동 점수 계산기</title>
+    <title>로스트시티 - 자동 점수 계산기</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -64,7 +64,7 @@
                 <span class="text-3xl">🕯️</span>
                 <div>
                     <h1 class="text-2xl font-black font-cinzel tracking-wider text-amber-500 drop-shadow-md">ABYSSAL EXPEDITION</h1>
-                    <p class="text-xs text-stone-400 font-medium">제작자: 천상민 | 던전 심층 탐험 점수 계산기</p>
+                    <p class="text-xs text-stone-400 font-medium">제작자: 천상민 | 로스트시티 점수 계산기</p>
                 </div>
             </div>
             
@@ -80,12 +80,11 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
-        <!-- 컨트롤 바 (초기화 버튼 추가) -->
         <div class="flex flex-wrap justify-between items-center gap-4 bg-stone-900/40 p-4 rounded-xl border border-stone-800/60">
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2">
                     <span class="text-stone-400 text-sm font-bold">👥 탐험가 목록</span>
-                    <span id="player-count" class="text-xs bg-stone-800 text-amber-400 px-2 py-0.5 rounded-full font-bold">2명</span>
+                    <span id="player-count" class="text-xs bg-stone-800 text-amber-400 px-2 py-0.5 rounded-full font-bold">1명</span>
                 </div>
                 <button onclick="resetCurrentRound()" class="bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/50 text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
                     🔄 현재 라운드 초기화
@@ -127,34 +126,25 @@
 
         let currentRound = 1;
         let players = [
-            { id: 1, name: '탐험가 1', data: { 1: createRoundData(), 2: createRoundData(), 3: createRoundData() } },
-            { id: 2, name: '탐험가 2', data: { 1: createRoundData(), 2: createRoundData(), 3: createRoundData() } }
+            { id: 1, name: '탐험가 1', data: { 1: createRoundData(), 2: createRoundData(), 3: createRoundData() } }
         ];
 
         function createRoundData() {
             let obj = {};
             GROUPS.forEach(g => {
                 obj[g.id] = { 
-                    baseNumbersInput: '', 
-                    expansionCount: 0, // 확장 버전 +10점 횟수 (몇 개든 가능)
-                    over8Bonus: false, // 8장 보너스 (+20)
+                    expansionCount: 0, 
+                    over8Bonus: false, 
                     clickedItems: { 
                         2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false, 
-                        'exp1': false, 'exp2': false, 'exp3': false // 탐험 3개 (클릭 개수에 따라 연구 카드 배율 결정: 1개->x2, 2개->x3, 3개->x4)
+                        'exp1': false, 'exp2': false, 'exp3': false 
                     } 
                 };
             });
             return obj;
         }
 
-        // 점수 계산 순서:
-        // 1. 카드 총합 (기본 숫자 + 2~10 마커 합)
-        // 2. 숫자가 들어가면 탐험비용 -20 적용 (0점이면 미적용)
-        // 3. 연구 카드 배율 적용: '탐험' 버튼을 누른 개수(1개: x2, 2개: x3, 3개: x4). 누르지 않았으면 x1
-        // 4. 확장 버전 +10점 추가 (횟수 제한 없음, 개당 +10점)
-        // 5. 8장 이상 보너스 (+20점) 추가
         function calculateGroupScore(groupData) {
-            let numbers = groupData.baseNumbersInput.split(/[\s,]+/).map(n => parseInt(n)).filter(n => !isNaN(n));
             let clickSum = 0;
             let hasAnyClick = false;
             
@@ -167,12 +157,10 @@
                 }
             }
 
-            if(numbers.length === 0 && !hasAnyClick) return 0;
+            if(!hasAnyClick) return 0;
 
-            // 1단계 & 2단계: 카드 총합 + 탐험비용 -20
-            let subtotal = (numbers.reduce((acc, cur) => acc + cur, 0) + clickSum) - 20;
+            let subtotal = clickSum - 20;
 
-            // 3단계: 탐험 버튼 클릭 개수에 따른 연구카드 배율 적용 (1개: x2, 2개: x3, 3개: x4)
             let expCount = 0;
             if(groupData.clickedItems['exp1']) expCount++;
             if(groupData.clickedItems['exp2']) expCount++;
@@ -184,11 +172,7 @@
             else if(expCount >= 3) multiplier = 4;
 
             let multipliedScore = subtotal * multiplier;
-
-            // 4단계: 확장 버전 +10점 (몇 개든 가능)
             let expansionBonus = (groupData.expansionCount || 0) * 10;
-
-            // 5단계: 8장 이상 보너스 (+20점)
             let over8 = groupData.over8Bonus ? 20 : 0;
 
             return multipliedScore + expansionBonus + over8;
@@ -212,10 +196,9 @@
         }
 
         function resetAllData() {
-            if(confirm('모든 라운드와 플레이어 데이터가 초기화됩니다. 진행하시겠습니까?')) {
+            if(confirm('모든 라운드와 플레이어 데이터가 초기화됩니다. 탐험가 1명 상태로 되돌립니다.')) {
                 players = [
-                    { id: 1, name: '탐험가 1', data: { 1: createRoundData(), 2: createRoundData(), 3: createRoundData() } },
-                    { id: 2, name: '탐험가 2', data: { 1: createRoundData(), 2: createRoundData(), 3: createRoundData() } }
+                    { id: 1, name: '탐험가 1', data: { 1: createRoundData(), 2: createRoundData(), 3: createRoundData() } }
                 ];
                 renderApp();
             }
@@ -238,12 +221,12 @@
                 <div class="dungeon-card rounded-2xl p-6 border-stone-800">
                     <div class="flex justify-between items-center mb-6 gap-2">
                         <div class="flex items-center gap-3">
-                            <input type="text" value="${p.name}" oninput="players.find(x=>x.id==${p.id}).name=this.value; renderApp()" class="dungeon-input px-3 py-1.5 rounded-lg font-bold text-sm w-36">
-                            <button onclick="players = players.filter(x => x.id !== ${p.id}); renderApp();" class="text-xs text-stone-500 hover:text-rose-400">삭제</button>
+                            <input type="text" value="${p.name}" oninput="players.find(x=>x.id==${p.id}).name=this.value; renderLeaderboardOnly();" class="dungeon-input px-3 py-1.5 rounded-lg font-bold text-sm w-36">
+                            <button onclick="if(players.length <= 1) { alert('최소 1명의 탐험가가 필요합니다.'); return; } players = players.filter(x => x.id !== ${p.id}); renderApp();" class="text-xs text-stone-500 hover:text-rose-400">삭제</button>
                         </div>
                         <div class="text-right">
-                            <div class="text-xs text-stone-400">R${currentRound} 점수: <span class="text-amber-400 font-bold">${calculatePlayerRoundTotal(p, currentRound)}점</span></div>
-                            <div class="text-amber-300 font-bold font-cinzel text-lg">3라운드 총합: ${calculatePlayerGrandTotal(p)}점</div>
+                            <div class="text-xs text-stone-400">R${currentRound} 점수: <span id="r-total-${p.id}" class="text-amber-400 font-bold">${calculatePlayerRoundTotal(p, currentRound)}점</span></div>
+                            <div id="g-total-${p.id}" class="text-amber-300 font-bold font-cinzel text-lg">3라운드 총합: ${calculatePlayerGrandTotal(p)}점</div>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
@@ -252,24 +235,20 @@
                             return `
                                 <div class="bg-stone-950 p-4 rounded-xl border ${g.border} flex flex-col justify-between gap-3">
                                     <div>
-                                        <div class="flex justify-between items-center mb-2">
+                                        <div class="flex justify-between items-center mb-3">
                                             <span class="text-xs font-bold ${g.color}">${g.name} 던전</span>
-                                            <span class="text-xs font-bold text-stone-200">${calculateGroupScore(gData)}점</span>
+                                            <span id="score-${p.id}-${g.id}" class="text-xs font-bold text-stone-200">${calculateGroupScore(gData)}점</span>
                                         </div>
-                                        <div class="space-y-1 mb-2">
-                                            <span class="text-[10px] text-stone-400">기본 숫자 입력</span>
-                                            <input type="text" value="${gData.baseNumbersInput}" placeholder="예: 5, 12, 8" oninput="players.find(x=>x.id==${p.id}).data[currentRound]['${g.id}'].baseNumbersInput=this.value; renderApp()" class="dungeon-input w-full p-1.5 text-xs rounded">
-                                        </div>
-                                        <div class="space-y-1 mb-2">
-                                            <span class="text-[10px] text-stone-400">점수 마커 (2~10)</span>
+                                        <div class="space-y-1.5 mb-3">
+                                            <span class="text-[10px] text-stone-400 block font-medium">점수 마커 (2~10)</span>
                                             <div class="grid grid-cols-5 gap-1">
-                                                ${[2,3,4,5,6,7,8,9,10].map(k => `<button onclick="let d=players.find(x=>x.id==${p.id}).data[currentRound]['${g.id}'].clickedItems; d['${k}']=!d['${k}']; renderApp()" class="dungeon-btn ${gData.clickedItems[k] ? 'active' : ''} text-[10px] py-1 rounded font-bold">${k}</button>`).join('')}
+                                                ${[2,3,4,5,6,7,8,9,10].map(k => `<button type="button" onclick="toggleItem(${p.id}, '${g.id}', '${k}')" class="dungeon-btn ${gData.clickedItems[k] ? 'active' : ''} text-[10px] py-1 rounded font-bold">${k}</button>`).join('')}
                                             </div>
                                         </div>
-                                        <div class="space-y-1">
-                                            <span class="text-[10px] text-stone-400">탐험 (클릭 시 연구배율 적용: x2/x3/x4)</span>
+                                        <div class="space-y-1.5">
+                                            <span class="text-[10px] text-stone-400 block font-medium">탐험 (연구배율: x2/x3/x4)</span>
                                             <div class="grid grid-cols-3 gap-1">
-                                                ${['exp1', 'exp2', 'exp3'].map((k, idx) => `<button onclick="let d=players.find(x=>x.id==${p.id}).data[currentRound]['${g.id}'].clickedItems; d['${k}']=!d['${k}']; renderApp()" class="dungeon-btn ${gData.clickedItems[k] ? 'active' : ''} text-[10px] py-1 rounded font-bold">탐험${idx+1}</button>`).join('')}
+                                                ${['exp1', 'exp2', 'exp3'].map((k, idx) => `<button type="button" onclick="toggleItem(${p.id}, '${g.id}', '${k}')" class="dungeon-btn ${gData.clickedItems[k] ? 'active' : ''} text-[10px] py-1 rounded font-bold">탐험${idx+1}</button>`).join('')}
                                             </div>
                                         </div>
                                     </div>
@@ -277,20 +256,72 @@
                                         <div class="flex items-center justify-between">
                                             <span class="text-[11px] text-stone-300">확장 버전 (+10점)</span>
                                             <div class="flex items-center gap-1">
-                                                <button onclick="let d=players.find(x=>x.id==${p.id}).data[currentRound]['${g.id}']; d.expansionCount = Math.max(0, (d.expansionCount||0)-1); renderApp()" class="px-1.5 bg-stone-800 rounded text-stone-300">-</button>
+                                                <button type="button" onclick="adjustExpansion(${p.id}, '${g.id}', -1)" class="px-1.5 bg-stone-800 rounded text-stone-300">-</button>
                                                 <span class="w-5 text-center text-amber-400 font-bold">${gData.expansionCount || 0}</span>
-                                                <button onclick="let d=players.find(x=>x.id==${p.id}).data[currentRound]['${g.id}']; d.expansionCount = (d.expansionCount||0)+1; renderApp()" class="px-1.5 bg-stone-800 rounded text-stone-300">+</button>
+                                                <button type="button" onclick="adjustExpansion(${p.id}, '${g.id}', 1)" class="px-1.5 bg-stone-800 rounded text-stone-300">+</button>
                                             </div>
                                         </div>
                                         <div class="flex items-center justify-between bg-stone-900/60 px-2 py-1.5 rounded border border-stone-800">
                                             <span class="text-[11px] text-stone-300">8장 이상 보너스 (+20)</span>
-                                            <input type="checkbox" ${gData.over8Bonus ? 'checked' : ''} onchange="players.find(x=>x.id==${p.id}).data[currentRound]['${g.id}'].over8Bonus=this.checked; renderApp()" class="w-4 h-4 accent-amber-600 cursor-pointer rounded">
+                                            <input type="checkbox" ${gData.over8Bonus ? 'checked' : ''} onchange="toggleOver8(${p.id}, '${g.id}', this.checked)" class="w-4 h-4 accent-amber-600 cursor-pointer rounded">
                                         </div>
                                     </div>
                                 </div>
                             `;
                         }).join('')}
                     </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleItem(playerId, groupId, key) {
+            let p = players.find(x => x.id === playerId);
+            if(p) {
+                let d = p.data[currentRound][groupId].clickedItems;
+                d[key] = !d[key];
+                updateScoresUI(p);
+            }
+        }
+
+        function adjustExpansion(playerId, groupId, delta) {
+            let p = players.find(x => x.id === playerId);
+            if(p) {
+                let gData = p.data[currentRound][groupId];
+                gData.expansionCount = Math.max(0, (gData.expansionCount || 0) + delta);
+                updateScoresUI(p);
+            }
+        }
+
+        function toggleOver8(playerId, groupId, isChecked) {
+            let p = players.find(x => x.id === playerId);
+            if(p) {
+                p.data[currentRound][groupId].over8Bonus = isChecked;
+                updateScoresUI(p);
+            }
+        }
+
+        function updateScoresUI(p) {
+            GROUPS.forEach(g => {
+                let score = calculateGroupScore(p.data[currentRound][g.id]);
+                let el = document.getElementById(`score-${p.id}-${g.id}`);
+                if(el) el.innerText = score + '점';
+            });
+            let rTotalEl = document.getElementById(`r-total-${p.id}`);
+            if(rTotalEl) rTotalEl.innerText = calculatePlayerRoundTotal(p, currentRound) + '점';
+
+            let gTotalEl = document.getElementById(`g-total-${p.id}`);
+            if(gTotalEl) gTotalEl.innerText = '3라운드 총합: ' + calculatePlayerGrandTotal(p) + '점';
+
+            renderLeaderboardOnly();
+        }
+
+        function renderLeaderboardOnly() {
+            const lContainer = document.getElementById('leaderboard-container');
+            let sorted = [...players].map(p => ({...p, total: calculatePlayerGrandTotal(p)})).sort((a, b) => b.total - a.total);
+            lContainer.innerHTML = sorted.map((p, i) => `
+                <div class="bg-stone-900 rounded-xl p-3 border border-stone-800 flex items-center justify-between">
+                    <div class="font-bold text-stone-200 text-sm">#${i+1} ${p.name}</div>
+                    <div class="text-amber-500 font-black font-cinzel">${p.total}점</div>
                 </div>
             `).join('');
         }
