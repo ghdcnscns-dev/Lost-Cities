@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>로스트시티 - 자동 점수 계산기</title>
+    <title>LOST CITIES - 자동 점수 계산기</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
@@ -34,22 +34,15 @@
             background-color: #171514;
             border: 1px solid #2e2825;
             color: #78716c;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .dungeon-btn.active {
-            background: linear-gradient(135deg, #b45309, #d97706);
-            border-color: #f59e0b;
+            background: linear-gradient(135deg, #d97706, #b45309);
+            border-color: #fbbf24;
             color: #ffffff;
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.5), inset 0 1px 2px rgba(255,255,255,0.3);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); }
-            50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.8); }
-        }
-        .winner-glow {
-            animation: pulse-glow 2s infinite;
-            border-color: #eab308 !important;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.7), 0 0 5px rgba(245, 158, 11, 0.9), inset 0 0 8px rgba(255, 255, 255, 0.5);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.8);
+            transform: scale(1.03);
         }
         .mystic-bg {
             background-image: radial-gradient(circle at 50% 0%, #291b11 0%, #0c0a09 70%);
@@ -63,8 +56,8 @@
             <div class="flex items-center gap-3">
                 <span class="text-3xl">🕯️</span>
                 <div>
-                    <h1 class="text-2xl font-black font-cinzel tracking-wider text-amber-500 drop-shadow-md">ABYSSAL EXPEDITION</h1>
-                    <p class="text-xs text-stone-400 font-medium">제작자: 천상민 | 로스트시티 점수 계산기</p>
+                    <h1 class="text-2xl font-black font-cinzel tracking-wider text-amber-500 drop-shadow-md">LOST CITIES</h1>
+                    <p class="text-xs text-stone-400 font-medium">제작자: 천상민 | 로스트 시티 점수 계산기</p>
                 </div>
             </div>
             
@@ -112,7 +105,7 @@
     </main>
 
     <footer class="text-center py-8 text-stone-600 text-xs border-t border-stone-900 mt-12">
-        <p class="font-cinzel">Abyssal Expedition • Designed & Built by 천상민</p>
+        <p class="font-cinzel">Lost Cities • Designed & Built by 천상민</p>
     </footer>
 
     <script>
@@ -132,16 +125,20 @@
         function createRoundData() {
             let obj = {};
             GROUPS.forEach(g => {
-                obj[g.id] = { 
-                    expansionCount: 0, 
-                    over8Bonus: false, 
-                    clickedItems: { 
-                        2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false, 
-                        'exp1': false, 'exp2': false, 'exp3': false 
-                    } 
-                };
+                obj[g.id] = createSingleGroupData();
             });
             return obj;
+        }
+
+        function createSingleGroupData() {
+            return { 
+                expansionCount: 0, 
+                over8Bonus: false, 
+                clickedItems: { 
+                    2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false, 9: false, 10: false, 
+                    'exp1': false, 'exp2': false, 'exp3': false 
+                } 
+            };
         }
 
         function calculateGroupScore(groupData) {
@@ -204,6 +201,16 @@
             }
         }
 
+        function resetGroup(playerId, groupId) {
+            let p = players.find(x => x.id === playerId);
+            if(p) {
+                p.data[currentRound][groupId] = createSingleGroupData();
+                updateScoresUI(p);
+                // 개별 그룹 초기화 시 해당 카드를 다시 렌더링하여 UI 반영
+                renderApp();
+            }
+        }
+
         function renderApp() {
             const container = document.getElementById('players-container');
             document.getElementById('player-count').innerText = `${players.length}명`;
@@ -236,7 +243,10 @@
                                 <div class="bg-stone-950 p-4 rounded-xl border ${g.border} flex flex-col justify-between gap-3">
                                     <div>
                                         <div class="flex justify-between items-center mb-3">
-                                            <span class="text-xs font-bold ${g.color}">${g.name} 던전</span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-xs font-bold ${g.color}">${g.name} 탐험</span>
+                                                <button type="button" onclick="resetGroup(${p.id}, '${g.id}')" class="text-[10px] bg-stone-900 hover:bg-stone-800 text-stone-400 hover:text-stone-200 px-1.5 py-0.5 rounded border border-stone-800 transition-all" title="이 그룹 초기화">초기화</button>
+                                            </div>
                                             <span id="score-${p.id}-${g.id}" class="text-xs font-bold text-stone-200">${calculateGroupScore(gData)}점</span>
                                         </div>
                                         <div class="space-y-1.5 mb-3">
