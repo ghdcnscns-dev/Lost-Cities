@@ -36,6 +36,7 @@
             color: #78716c;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        /* 활성화되었을 때 불이 켜지는 네온 글로우 효과와 입체감 */
         .dungeon-btn.active {
             background: linear-gradient(135deg, #d97706, #b45309);
             border-color: #fbbf24;
@@ -205,8 +206,6 @@
             let p = players.find(x => x.id === playerId);
             if(p) {
                 p.data[currentRound][groupId] = createSingleGroupData();
-                updateScoresUI(p);
-                // 개별 그룹 초기화 시 해당 카드를 다시 렌더링하여 UI 반영
                 renderApp();
             }
         }
