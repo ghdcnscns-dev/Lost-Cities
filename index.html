@@ -36,14 +36,14 @@
             color: #78716c;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* 활성화되었을 때 불이 켜지는 네온 글로우 효과와 입체감 */
+        /* 클릭 시 네온 글로우 불빛 효과 */
         .dungeon-btn.active {
-            background: linear-gradient(135deg, #d97706, #b45309);
-            border-color: #fbbf24;
-            color: #ffffff;
-            box-shadow: 0 0 15px rgba(251, 191, 36, 0.7), 0 0 5px rgba(245, 158, 11, 0.9), inset 0 0 8px rgba(255, 255, 255, 0.5);
+            background: linear-gradient(135deg, #d97706, #b45309) !important;
+            border-color: #fbbf24 !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.8), 0 0 5px rgba(245, 158, 11, 0.9), inset 0 0 8px rgba(255, 255, 255, 0.6) !important;
             text-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.8);
-            transform: scale(1.03);
+            transform: scale(1.04);
         }
         .mystic-bg {
             background-image: radial-gradient(circle at 50% 0%, #291b11 0%, #0c0a09 70%);
@@ -288,7 +288,7 @@
             if(p) {
                 let d = p.data[currentRound][groupId].clickedItems;
                 d[key] = !d[key];
-                updateScoresUI(p);
+                renderApp();
             }
         }
 
@@ -297,7 +297,7 @@
             if(p) {
                 let gData = p.data[currentRound][groupId];
                 gData.expansionCount = Math.max(0, (gData.expansionCount || 0) + delta);
-                updateScoresUI(p);
+                renderApp();
             }
         }
 
@@ -305,23 +305,8 @@
             let p = players.find(x => x.id === playerId);
             if(p) {
                 p.data[currentRound][groupId].over8Bonus = isChecked;
-                updateScoresUI(p);
+                renderApp();
             }
-        }
-
-        function updateScoresUI(p) {
-            GROUPS.forEach(g => {
-                let score = calculateGroupScore(p.data[currentRound][g.id]);
-                let el = document.getElementById(`score-${p.id}-${g.id}`);
-                if(el) el.innerText = score + '점';
-            });
-            let rTotalEl = document.getElementById(`r-total-${p.id}`);
-            if(rTotalEl) rTotalEl.innerText = calculatePlayerRoundTotal(p, currentRound) + '점';
-
-            let gTotalEl = document.getElementById(`g-total-${p.id}`);
-            if(gTotalEl) gTotalEl.innerText = '3라운드 총합: ' + calculatePlayerGrandTotal(p) + '점';
-
-            renderLeaderboardOnly();
         }
 
         function renderLeaderboardOnly() {
